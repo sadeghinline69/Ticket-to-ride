@@ -595,11 +595,11 @@ html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
 <div id="onlinePanel" class="hidden"><div class="row"><div class="field"><label>Room Action</label><select id="onlineAction"><option value="create">Create Room</option><option value="join">Join Room</option></select></div><div class="field" id="onlineBotsField"><label>Bots in Room</label><select id="onlineBots"><option>0</option><option>1</option><option>2</option><option>3</option></select></div><div class="field hidden" id="joinCodeField"><label>Room Code</label><input id="joinCode" maxlength="6" placeholder="ABC123"></div></div><button id="onlineConnectBtn" class="btn" type="button" onclick="onlineConnect()">Create Room</button><div id="onlineStatus" class="onlineStatus">Choose Create Room or Join Room.</div><div id="roomCodeBox" class="roomCodeBox hidden"></div><button id="onlineStartBtn" class="btn primary hidden" type="button" onclick="startOnlineHostedGame()">Start Online Game</button></div>
 <button id="startJourneyBtn" class="btn primary" onclick="startGame()">🚂 Start Journey</button>
 <p class="note">Original browser implementation based on the supplied gameplay rules. Artwork and interface are newly created.</p>
-<div class="version">Version 59</div>
+<div class="version">Version 60</div>
 </div></section>
 
 <section id="game" class="screen hidden">
-<div class="gameVersion">Version 59</div>
+<div class="gameVersion">Version 60</div>
 <div id="finalRoundAlert" role="alert" aria-live="assertive">⚠ FINAL ROUND — ONE LAST TURN FOR EVERY PLAYER ⚠</div>
 <aside class="sidebar"><div id="players"></div><button id="leftDestBtn" class="btn leftDestBtn" onclick="drawTickets()">🎫 Destination Tickets</button><div id="ticketModal" class="modal ticketModalMap hidden"><div class="modalBox"><div id="ticketChoices" class="ticketChoices"></div><button class="btn primary" onclick="confirmTickets()">Choose</button></div></div><div class="leftTools"><button class="btn" onclick="showHelp()">?</button><button class="btn" onclick="location.reload()">⌂</button></div></aside>
 <main class="mapWrap"><div id="map"></div><div id="mapSavedTickets" class="mapSavedTickets"></div><div id="turnBanner" class="turnBanner"></div><div id="toast" class="toast hidden"></div></main>
@@ -774,7 +774,9 @@ function renderAll(){
  $("players").innerHTML=players.map((p,i)=>`<div class="playerCard ${i===turn&&!initialSetup?"active":""} ${p.isBot?"botCard":""} ${p.isBot&&i===turn&&!initialSetup?"botThinking":""}" style="border-left:8px solid ${p.color}"><div class="pname">${p.name}</div><div class="stats"><span>★ ${p.score}</span><span>🚂 ${p.trains}</span><span>🎴 ${p.hand.length}</span></div></div>`).join("");
  if(players[turn])$("turnBanner").textContent=`${players[turn].name}'s turn`;
  $("market").innerHTML=market.map((c,i)=>`<div class="card ${c==="wild"?"wild":""}" onclick="drawFace(${i})"><div class="train" style="background:${c==="wild"?"var(--loco-rainbow)":TRAINCOL[c]}"></div></div>`).join("");
- let p=(gameMode==="online"&&onlineSeat!=null?players[onlineSeat]:players[turn])||players[0]; if(!p)return;
+ // Keep this device's own private hand and destinations visible on every turn.
+ // Bot Match always belongs to player 0; each online phone uses its assigned seat.
+ let p=(gameMode==="online"&&onlineSeat!=null?players[onlineSeat]:players[0]); if(!p)return;
  let counts={};p.hand.forEach(c=>counts[c]=(counts[c]||0)+1);$("hand").innerHTML=p.isBot?"":Object.entries(counts).map(([c,n])=>`<div class="handCard ${c==="wild"?"wildHand":""} ${selectedClaimColor===c?"claimColorSelected":""}" onclick="selectClaimColor('${c}')"><b>${n}×</b><div class="swatch" style="background:${c==="wild"?"var(--loco-rainbow)":TRAINCOL[c]}"></div></div>`).join("");
  $("myTickets").innerHTML=p.isBot?"":p.tickets.map(t=>`<div class="ticket" style="--ticket-color:${ticketColor(t)}"><span class="value">${t.v}</span></div>`).join("");
  $("sideTickets").innerHTML="";
