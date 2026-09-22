@@ -576,6 +576,13 @@ html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
  #game{grid-template-columns:155px minmax(0,1fr) 140px!important}.sidebar{padding:6px!important}.playerCard{padding:5px!important;margin-bottom:4px!important}.stats{font-size:10px!important}.market{padding:5px!important}.market .card{height:44px!important}
  #finalScoreShow{width:155px!important}.leftDestBtn{left:4px!important;right:4px!important}.leftTools{left:4px!important;right:4px!important}
 }
+/* Version 57 — true desktop document scrolling; no fixed-screen clipping. */
+@media (hover:hover) and (pointer:fine){
+ html,body{height:auto!important;min-height:100%!important;overflow:auto!important;overflow-x:auto!important}
+ .menu{display:block!important;height:100vh!important;min-height:540px!important;overflow:auto!important;padding:12px!important}
+ .menu.hidden{display:none!important}.menu .panel{margin:0 auto!important}
+ #game:not(.hidden){position:relative!important;inset:auto!important;width:max(100vw,900px)!important;max-width:none!important;height:max(100vh,600px)!important;min-width:900px!important;min-height:600px!important;overflow:hidden!important}
+}
 </style></head>
 <body>
 <section id="menu" class="screen menu">
@@ -588,11 +595,11 @@ html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
 <div id="onlinePanel" class="hidden"><div class="row"><div class="field"><label>Room Action</label><select id="onlineAction"><option value="create">Create Room</option><option value="join">Join Room</option></select></div><div class="field" id="onlineBotsField"><label>Bots in Room</label><select id="onlineBots"><option>0</option><option>1</option><option>2</option><option>3</option></select></div><div class="field hidden" id="joinCodeField"><label>Room Code</label><input id="joinCode" maxlength="6" placeholder="ABC123"></div></div><button id="onlineConnectBtn" class="btn" type="button" onclick="onlineConnect()">Create Room</button><div id="onlineStatus" class="onlineStatus">Choose Create Room or Join Room.</div><div id="roomCodeBox" class="roomCodeBox hidden"></div><button id="onlineStartBtn" class="btn primary hidden" type="button" onclick="startOnlineHostedGame()">Start Online Game</button></div>
 <button id="startJourneyBtn" class="btn primary" onclick="startGame()">🚂 Start Journey</button>
 <p class="note">Original browser implementation based on the supplied gameplay rules. Artwork and interface are newly created.</p>
-<div class="version">Version 56</div>
+<div class="version">Version 58</div>
 </div></section>
 
 <section id="game" class="screen hidden">
-<div class="gameVersion">Version 56</div>
+<div class="gameVersion">Version 58</div>
 <div id="finalRoundAlert" role="alert" aria-live="assertive">⚠ FINAL ROUND — ONE LAST TURN FOR EVERY PLAYER ⚠</div>
 <aside class="sidebar"><div id="players"></div><button id="leftDestBtn" class="btn leftDestBtn" onclick="drawTickets()">🎫 Destination Tickets</button><div id="ticketModal" class="modal ticketModalMap hidden"><div class="modalBox"><div id="ticketChoices" class="ticketChoices"></div><button class="btn primary" onclick="confirmTickets()">Choose</button></div></div><div class="leftTools"><button class="btn" onclick="showHelp()">?</button><button class="btn" onclick="location.reload()">⌂</button></div></aside>
 <main class="mapWrap"><div id="map"></div><div id="mapSavedTickets" class="mapSavedTickets"></div><div id="turnBanner" class="turnBanner"></div><div id="toast" class="toast hidden"></div></main>
@@ -679,7 +686,10 @@ function startGame(){
   if(onlineRole!=="host"||!onlineMembers.length){$("onlineStatus").textContent="Create the room before starting.";return}
   players=onlineMembers.map((m,i)=>({name:m.name,color:COLORS[i],score:0,trains:45,hand:[],tickets:[],isBot:!!m.isBot,remote:!!m.remote,difficulty:m.isBot?botDifficulty:null,connectionIndex:m.connectionIndex??null}));onlineSeat=0;
  }
- let types=["blue","red","green","yellow","orange","white","black","purple"]; deck=[];types.forEach(c=>{for(let i=0;i<12;i++)deck.push(c)});for(let i=0;i<14;i++)deck.push("wild");deck=shuffle(deck);
+ // A larger, balanced supply prevents 4–5 player games from starving the blind deck.
+ // Two- and three-player games use 2 standard sets; four- and five-player games use 3.
+ let types=["blue","red","green","yellow","orange","white","black","purple"],deckMultiplier=players.length>=4?3:2;deck=[];
+ types.forEach(c=>{for(let i=0;i<12*deckMultiplier;i++)deck.push(c)});for(let i=0;i<14*deckMultiplier;i++)deck.push("wild");deck=shuffle(deck);
  destDeck=shuffle(TICKETS.map((t,i)=>({a:t[0],b:t[1],v:t[2],id:i})));
  players.forEach(p=>{for(let i=0;i<4;i++)p.hand.push(deck.pop())});
  refillMarket(); $("menu").classList.add("hidden");$("game").classList.remove("hidden");renderMap();renderAll();
