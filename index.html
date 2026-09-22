@@ -595,11 +595,11 @@ html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
 <div id="onlinePanel" class="hidden"><div class="row"><div class="field"><label>Room Action</label><select id="onlineAction"><option value="create">Create Room</option><option value="join">Join Room</option></select></div><div class="field" id="onlineBotsField"><label>Bots in Room</label><select id="onlineBots"><option>0</option><option>1</option><option>2</option><option>3</option></select></div><div class="field hidden" id="joinCodeField"><label>Room Code</label><input id="joinCode" maxlength="6" placeholder="ABC123"></div></div><button id="onlineConnectBtn" class="btn" type="button" onclick="onlineConnect()">Create Room</button><div id="onlineStatus" class="onlineStatus">Choose Create Room or Join Room.</div><div id="roomCodeBox" class="roomCodeBox hidden"></div><button id="onlineStartBtn" class="btn primary hidden" type="button" onclick="startOnlineHostedGame()">Start Online Game</button></div>
 <button id="startJourneyBtn" class="btn primary" onclick="startGame()">🚂 Start Journey</button>
 <p class="note">Original browser implementation based on the supplied gameplay rules. Artwork and interface are newly created.</p>
-<div class="version">Version 58</div>
+<div class="version">Version 59</div>
 </div></section>
 
 <section id="game" class="screen hidden">
-<div class="gameVersion">Version 58</div>
+<div class="gameVersion">Version 59</div>
 <div id="finalRoundAlert" role="alert" aria-live="assertive">⚠ FINAL ROUND — ONE LAST TURN FOR EVERY PLAYER ⚠</div>
 <aside class="sidebar"><div id="players"></div><button id="leftDestBtn" class="btn leftDestBtn" onclick="drawTickets()">🎫 Destination Tickets</button><div id="ticketModal" class="modal ticketModalMap hidden"><div class="modalBox"><div id="ticketChoices" class="ticketChoices"></div><button class="btn primary" onclick="confirmTickets()">Choose</button></div></div><div class="leftTools"><button class="btn" onclick="showHelp()">?</button><button class="btn" onclick="location.reload()">⌂</button></div></aside>
 <main class="mapWrap"><div id="map"></div><div id="mapSavedTickets" class="mapSavedTickets"></div><div id="turnBanner" class="turnBanner"></div><div id="toast" class="toast hidden"></div></main>
@@ -681,7 +681,7 @@ function startGame(){
  players=[];
  if(gameMode==="bot"){
   let humanName=document.querySelector(".nm")?.value.trim()||"Player 1";players.push({name:humanName,color:COLORS[0],score:0,trains:45,hand:[],tickets:[],isBot:false});localStorage.setItem("railName0",humanName);
-  for(let i=1;i<=+$("numPlayers").value;i++)players.push({name:`Conductor AI ${i} (${botDifficulty[0].toUpperCase()+botDifficulty.slice(1)})`,color:COLORS[i],score:0,trains:45,hand:[],tickets:[],isBot:true,difficulty:botDifficulty});
+  for(let i=1;i<=+$("numPlayers").value;i++)players.push({name:`Bot ${i}`,color:COLORS[i],score:0,trains:45,hand:[],tickets:[],isBot:true,difficulty:botDifficulty});
  }else if(gameMode==="online"){
   if(onlineRole!=="host"||!onlineMembers.length){$("onlineStatus").textContent="Create the room before starting.";return}
   players=onlineMembers.map((m,i)=>({name:m.name,color:COLORS[i],score:0,trains:45,hand:[],tickets:[],isBot:!!m.isBot,remote:!!m.remote,difficulty:m.isBot?botDifficulty:null,connectionIndex:m.connectionIndex??null}));onlineSeat=0;
@@ -1270,7 +1270,7 @@ function hostOnlineMessage(conn,msg){
 function updateOnlineLobby(){let total=+$('numPlayers').value,bots=Math.min(+$('onlineBots').value,total-1),needed=total-bots-1,joined=onlineConnections.length;roomStatus(`Friends connected: ${joined}/${needed} · Bots: ${bots}`,joined===needed);$('onlineStartBtn').disabled=joined!==needed}
 function startOnlineHostedGame(){
  if(onlineRole!=='host')return;let total=+$('numPlayers').value,bots=Math.min(+$('onlineBots').value,total-1),needed=total-bots-1;if(onlineConnections.length!==needed){updateOnlineLobby();return}
- onlineMembers=[{name:onlineName(),isBot:false,remote:false}];onlineConnections.slice(0,needed).forEach((x,j)=>{x.seat=j+1;onlineMembers.push({name:x.name,isBot:false,remote:true,connectionIndex:j});x.conn.send({type:'assigned',seat:x.seat})});for(let i=0;i<bots;i++)onlineMembers.push({name:`Conductor AI ${i+1}`,isBot:true,remote:false});gameMode='online';startGame()
+ onlineMembers=[{name:onlineName(),isBot:false,remote:false}];onlineConnections.slice(0,needed).forEach((x,j)=>{x.seat=j+1;onlineMembers.push({name:x.name,isBot:false,remote:true,connectionIndex:j});x.conn.send({type:'assigned',seat:x.seat})});for(let i=0;i<bots;i++)onlineMembers.push({name:`Bot ${i+1}`,isBot:true,remote:false});gameMode='online';startGame()
 }
 function guestOnlineMessage(msg){
  if(!msg)return;if(msg.type==='reject'){roomStatus(msg.reason||'Unable to join.');return}if(msg.type==='assigned'){onlineSeat=+msg.seat;roomStatus(`Seat ${onlineSeat+1} assigned. Waiting for the host.`,true);return}if(msg.type==='state')applyOnlineState(msg.state)
